@@ -3,7 +3,12 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, ... }:
-
+let
+  unstable = import
+    (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
+    # reuse the current configuration
+    { config = config.nixpkgs.config; };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -139,21 +144,6 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-
-  # virtual machines
-  #virtualisation.libvirtd.enable = true;
-
-  #boot.extraModprobeConfig = ''
-    #options kvm_amd nested=1
-    #options kvm_amd emulate_invalid_guest_state=0
-    #options kvm ignore_msrs=1
-  #'';
-  #boot.kernelModules = ["vfio-pci"];
-  #boot.blacklistedKernelModules = ["nouveao"];
-  #networking.bridges.br-lan.interfaces = [ "enp2s0" ];
-
   # containers
   virtualisation.containers.enable = true;
   virtualisation = {
@@ -181,7 +171,7 @@
     git
 
     # hyprland stuff    
-    eww
+    unstable.eww
     mako
     libnotify
     hyprpaper
