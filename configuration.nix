@@ -4,29 +4,23 @@
 
 { config, pkgs, ... }:
 let
-  baseconfig = config.nixpkgs.config;
-  unstable = import
-    # (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
-    <nixpkgs-unstable>
-    # reuse the current configuration
-    { config = config.nixpkgs.config; };
+   unstable = import
+     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
+     # reuse the current configuration
+     { config = config.nixpkgs.config; };
 in
 {
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
-      <nixos-unstable/modules/programs/uwsm.nix>
    ];
 
-  nixpkgs.config = baseconfig {
+  nixpkgs.config = {
     # Allow unfree packages
     allowUnfree = true;
     permittedInsecurePackages = [
       "electron-25.9.0"
     ];
-    packageOverrides = pkgs: {
-      uwsm = unstable.uwsm;
-    }; 
   };
  
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -91,14 +85,15 @@ in
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
-  programs.uwsm.enable = true;
-  programs.uwsm.waylandCompositors = {
-    hyprland = {
-      prettyName = "Hyprland";
-      comment = "Hyprland compositor managed by UWSM";
-      binPath = "/run/current-system/sw/bin/Hyprland";
-    };
-  };
+  #for future generations:
+  #programs.uwsm.enable = true;
+  #programs.uwsm.waylandCompositors = {
+  #  hyprland = {
+  #    prettyName = "Hyprland";
+  #    comment = "Hyprland compositor managed by UWSM";
+  #    binPath = "/run/current-system/sw/bin/Hyprland";
+  #  };
+  #};
 
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
