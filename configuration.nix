@@ -4,17 +4,30 @@
 
 { config, pkgs, ... }:
 let
+  baseconfig = config.nixpkgs.config;
   unstable = import
-    (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
+    # (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
+    <nixpkgs-unstable>
     # reuse the current configuration
     { config = config.nixpkgs.config; };
 in
 {
-  imports =
-    [ # Include the results of the hardware scan.
+  imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
+      <nixos-unstable/modules/programs/uwsm.nix>
+   ];
+
+  nixpkgs.config = baseconfig {
+    # Allow unfree packages
+    allowUnfree = true;
+    permittedInsecurePackages = [
+      "electron-25.9.0"
     ];
+    packageOverrides = pkgs: {
+      uwsm = unstable.uwsm;
+    }; 
+  };
  
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -78,6 +91,15 @@ in
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
+  programs.uwsm.enable = true;
+  programs.uwsm.waylandCompositors = {
+    hyprland = {
+      prettyName = "Hyprland";
+      comment = "Hyprland compositor managed by UWSM";
+      binPath = "/run/current-system/sw/bin/Hyprland";
+    };
+  };
+
   # Enable the X11 windowing system.
   # services.xserver.enable = true;
 
@@ -119,9 +141,6 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-  nixpkgs.config.permittedInsecurePackages = [
-    "electron-25.9.0"
-  ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ben = {
@@ -140,9 +159,6 @@ in
       inkscape
     ];
   };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
 
   # containers
   virtualisation.containers.enable = true;
@@ -181,11 +197,13 @@ in
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  programs.mtr.enable = true;
+  services.pcscd.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+    pinentryFlavor = "curses";
+  };
 
   # List services that you want to enable:
 
