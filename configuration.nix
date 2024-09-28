@@ -5,15 +5,20 @@
 { config, pkgs, ... }:
 let
    unstable = import
-     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/568bfef547c14ca438c56a0bece08b8bb2b71a9c)
+     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/28b5b8af91ffd2623e995e20aee56510db49001a)
      # reuse the current configuration
      { config = config.nixpkgs.config; };
 in
 {
+  # disabledModules = [
+  #   "programs/wayland/uwsm.nix"
+  # ];
+
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
-   ];
+      #"${unstable}/nixos/modules/programs/wayland/uwsm.nix"
+  ];
 
   nixpkgs.config = {
     # Allow unfree packages
@@ -86,8 +91,8 @@ in
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   #for future generations:
-  #programs.uwsm.enable = true;
-  #programs.uwsm.waylandCompositors = {
+  # programs.uwsm.enable = true;
+  #unstable.uwsm.waylandCompositors = {
   #  hyprland = {
   #    prettyName = "Hyprland";
   #    comment = "Hyprland compositor managed by UWSM";
@@ -181,8 +186,9 @@ in
     podman-compose
     git
 
-    # hyprland stuff    
+    # hyprland stuff
     unstable.eww
+    unstable.uwsm
     mako
     libnotify
     hyprpaper
