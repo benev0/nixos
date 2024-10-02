@@ -189,6 +189,7 @@ in
     # hyprland stuff
     unstable.eww
     unstable.uwsm
+    grim
     mako
     libnotify
     hyprpaper
