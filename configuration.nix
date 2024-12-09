@@ -2,10 +2,10 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 let
    unstable = import
-     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/28b5b8af91ffd2623e995e20aee56510db49001a)
+     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/7881fbfd2e3ed1dfa315fca889b2cfd94be39337)
      # reuse the current configuration
      { config = config.nixpkgs.config; };
 in
@@ -17,6 +17,7 @@ in
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
+      inputs.home-manager.nixosModules.default
       #"${unstable}/nixos/modules/programs/wayland/uwsm.nix"
   ];
 
@@ -37,6 +38,16 @@ in
   };
 
   networking.hostName = "nixos"; # Define your hostname.
+  networking.wireless.iwd.enable = true;
+  networking.wireless.iwd.settings = {
+   IPv6 = {
+      Enabled = true;
+    };
+    Settings = {
+      AutoConnect = true;
+    };
+  };
+  networking.networkmanager.wifi.backend = "iwd";
 
   # Configure network proxy if nessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -71,10 +82,14 @@ in
   # image thumbnails
   services.tumbler.enable = true; 
 
+  programs.uwsm = {
+    enable = true;
+  };
+
   programs.hyprland = {
     enable = true;
-    enableNvidiaPatches = true;
     xwayland.enable = true;
+    withUWSM = true;
   };
 
   environment.sessionVariables = {
@@ -83,7 +98,7 @@ in
   };
 
   hardware = {
-    opengl.enable = true;
+    graphics.enable = true;
     nvidia.modesetting.enable = true;
   };
 
@@ -123,7 +138,6 @@ in
   };
 
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -141,6 +155,11 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
+  programs.bash.loginShellInit = "
+    if uwsm check may-start && uwsm select; then
+      exec systemd-cat -t uwsm_start uwsm start default
+    fi
+  ";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ben = {
@@ -158,6 +177,13 @@ in
       gimp
       inkscape
     ];
+  };
+
+  home-manager = {
+    extraSpecialArgs = { inherit inputs; };
+    users = {
+      "ben" = import ./home.nix;
+    };
   };
 
   # containers
@@ -185,11 +211,10 @@ in
     podman-tui
     podman-compose
     git
-
     # hyprland stuff
-    unstable.eww
-    unstable.uwsm
+    eww
     grim
+    slurp
     mako
     libnotify
     hyprpaper
@@ -204,7 +229,6 @@ in
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
-    pinentryFlavor = "curses";
   };
 
   # List services that you want to enable:
