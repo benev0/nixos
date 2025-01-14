@@ -41,7 +41,7 @@ in
   networking.wireless.iwd.enable = true;
   networking.wireless.iwd.settings = {
    IPv6 = {
-      Enabled = true;
+      Enabled = false;
     };
     Settings = {
       AutoConnect = true;
@@ -105,29 +105,6 @@ in
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
-  #for future generations:
-  # programs.uwsm.enable = true;
-  #unstable.uwsm.waylandCompositors = {
-  #  hyprland = {
-  #    prettyName = "Hyprland";
-  #    comment = "Hyprland compositor managed by UWSM";
-  #    binPath = "/run/current-system/sw/bin/Hyprland";
-  #  };
-  #};
-
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  # services.xserver.displayManager.gdm.enable = true;
-  # services.xserver.desktopManager.gnome.enable = true;
-
-  # Configure keymap in X11
-  # services.xserver = {
-    # layout = "us";
-    # xkbVariant = "";
-  # };
-
   services.supergfxd.enable = true;
 
   services = {
@@ -155,11 +132,15 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
+
   programs.bash.loginShellInit = "
     if uwsm check may-start && uwsm select; then
       exec systemd-cat -t uwsm_start uwsm start default
     fi
   ";
+
+  programs.direnv.enable = true;
+  programs.direnv.enableBashIntegration = false;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ben = {
