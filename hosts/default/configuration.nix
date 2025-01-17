@@ -37,24 +37,14 @@ in
     efi.canTouchEfiVariables = true;
   };
 
+  # Enable networking
+  networking.networkmanager.enable = true;
   networking.hostName = "nixos"; # Define your hostname.
-  networking.wireless.iwd.enable = true;
-  networking.wireless.iwd.settings = {
-   IPv6 = {
-      Enabled = false;
-    };
-    Settings = {
-      AutoConnect = true;
-    };
-  };
-  networking.networkmanager.wifi.backend = "iwd";
+  networking.enableIPv6 = false;
 
   # Configure network proxy if nessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
-  networking.networkmanager.enable = true;
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
   # Set your time zone.
