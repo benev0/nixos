@@ -7,8 +7,15 @@
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
-      inputs.home-manager.nixosModules.default
+      # inputs.home-manager.nixosModules.default
   ];
+
+  # home-manager = {
+  #   extraSpecialArgs = { inherit inputs; };
+  #   users = {
+  #     "ben" = import ./home.nix;
+  #   };
+  # };
 
   nixpkgs.config = {
     # Allow unfree packages
@@ -79,11 +86,6 @@
   # image thumbnails
   services.tumbler.enable = true; 
 
-
-  environment.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
-  };
-
   hardware = {
     graphics.enable = true;
     nvidia.modesetting.enable = true;
@@ -131,13 +133,6 @@
     packages = with pkgs; [];
   };
 
-  home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      "ben" = import ./home.nix;
-    };
-  };
-
   # containers
   virtualisation.containers.enable = true;
   virtualisation = {
@@ -158,15 +153,13 @@
     vim
     gnupg
     sbctl niv
+    home-manager
     # podman # likley enabled elsewhere
     dive
     podman-tui
     podman-compose
     git
     # hyprlandf
-
-    # embeded
-    probe-rs-tools
 
     # embeded
     probe-rs-tools
