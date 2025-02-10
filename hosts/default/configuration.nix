@@ -3,22 +3,11 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, inputs, ... }:
-let
-   unstable = import
-     (builtins.fetchTarball https://github.com/nixos/nixpkgs/tarball/7881fbfd2e3ed1dfa315fca889b2cfd94be39337)
-     # reuse the current configuration
-     { config = config.nixpkgs.config; };
-in
 {
-  # disabledModules = [
-  #   "programs/wayland/uwsm.nix"
-  # ];
-
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
       inputs.home-manager.nixosModules.default
-      #"${unstable}/nixos/modules/programs/wayland/uwsm.nix"
   ];
 
   nixpkgs.config = {
@@ -37,14 +26,32 @@ in
     efi.canTouchEfiVariables = true;
   };
 
+  services.xserver.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.desktopManager.gnome.enable = true;
+
+  environment.gnome.excludePackages = (with pkgs; [
+    atomix # puzzle game
+    cheese # webcam tool
+    epiphany # web browser
+    evince # document viewer
+    geary # email reader
+    gedit # text editor
+    gnome-characters
+    gnome-music
+    gnome-photos
+    # gnome-terminal
+    gnome-tour
+    hitori # sudoku game
+    iagno # go game
+    tali # poker game
+    totem # video player
+  ]);
+
   # Enable networking
   networking.networkmanager.enable = true;
   networking.hostName = "nixos"; # Define your hostname.
   networking.enableIPv6 = false;
-
-  # Configure network proxy if nessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
   # Set your time zone.
@@ -72,18 +79,8 @@ in
   # image thumbnails
   services.tumbler.enable = true; 
 
-  programs.uwsm = {
-    enable = true;
-  };
-
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-    withUWSM = true;
-  };
 
   environment.sessionVariables = {
-    WLR_NO_HARDWARE_CURSURS = "1";
     NIXOS_OZONE_WL = "1";
   };
 
@@ -95,9 +92,9 @@ in
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
-  services.supergfxd.enable = true;
 
   services = {
+    supergfxd = { enable = true; };
     asusd = {
       enable = true;
       enableUserService = true;
@@ -123,12 +120,6 @@ in
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  programs.bash.loginShellInit = "
-    if uwsm check may-start && uwsm select; then
-      exec systemd-cat -t uwsm_start uwsm start default
-    fi
-  ";
-
   programs.direnv.enable = true;
   programs.direnv.enableBashIntegration = false;
 
@@ -137,17 +128,7 @@ in
     isNormalUser = true;
     description = "ben";
     extraGroups = [ "networkmanager" "wheel" "libvirtd" "podman"];
-    packages = with pkgs; [
-      texliveFull
-      tlaplusToolbox
-      obsidian
-      firefox
-      discord
-      vscode-fhs
-      nodejs
-      gimp
-      inkscape
-    ];
+    packages = with pkgs; [];
   };
 
   home-manager = {
@@ -182,15 +163,13 @@ in
     podman-tui
     podman-compose
     git
-    # hyprland stuff
-    eww
-    grim
-    slurp
-    mako
-    libnotify
-    hyprpaper
-    alacritty
-    bemenu
+    # hyprlandf
+
+    # embeded
+    probe-rs-tools
+
+    # embeded
+    probe-rs-tools
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
