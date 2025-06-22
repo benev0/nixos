@@ -7,15 +7,7 @@
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./lanzaboote.nix
-      # inputs.home-manager.nixosModules.default
   ];
-
-  # home-manager = {
-  #   extraSpecialArgs = { inherit inputs; };
-  #   users = {
-  #     "ben" = import ./home.nix;
-  #   };
-  # };
 
   nixpkgs.config = {
     # Allow unfree packages
@@ -47,7 +39,7 @@
     gnome-characters
     gnome-music
     gnome-photos
-    # gnome-terminal
+    gnome-terminal
     gnome-tour
     hitori # sudoku game
     iagno # go game
@@ -55,10 +47,36 @@
     totem # video player
   ]);
 
+  # enable extra containers 
+  programs.extra-container.enable = true;
+
   # Enable networking
   networking.networkmanager.enable = true;
   networking.hostName = "nixos"; # Define your hostname.
-  networking.enableIPv6 = false;
+  networking.enableIPv6 = true;
+
+  # container networks (nat)
+  networking.nat = {
+    enable = true;
+    internalInterfaces = ["ve-+"];
+    externalInterface = "enp2s0";
+    enableIPv6 = true;
+  };
+
+  networking = {
+    bridges.br0.interfaces = [ "enp2s0" ];
+  
+    useDHCP = false;
+    interfaces."br0".useDHCP = true;
+
+    interfaces."br0".ipv4.addresses = [{
+      address = "192.168.100.3";
+      prefixLength = 24;
+    }];
+
+    defaultGateway = "192.168.100.1";
+    nameservers = [ "192.168.100.1" ];
+  };
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
   # Set your time zone.
@@ -163,6 +181,8 @@
 
     # embeded
     probe-rs-tools
+    # devenv
+    devenv
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
