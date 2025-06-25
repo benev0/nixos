@@ -28,6 +28,7 @@
   services.xserver.enable = true;
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+  services.xserver.videoDrivers = ["nvidia"];
 
   environment.gnome.excludePackages = (with pkgs; [
     atomix # puzzle game
@@ -106,7 +107,16 @@
 
   hardware = {
     graphics.enable = true;
-    nvidia.modesetting.enable = true;
+    nvidia = {
+      modesetting.enable = true;
+      powerManagement.enable = true;
+      powerManagement.finegrained = false;
+      open = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      prime.sync.enable = true;
+      prime.amdgpuBusId = "PCI:1:0:0";
+      prime.nvidiaBusId = "PCI:6:0:0";
+    };
   };
 
   xdg.portal.enable = true;
@@ -114,7 +124,10 @@
 
 
   services = {
-    supergfxd = { enable = true; };
+    supergfxd = { 
+      enable = true; 
+      # path = [ pkgs.pciutils ];
+    };
     asusd = {
       enable = true;
       enableUserService = true;
@@ -122,7 +135,7 @@
   };
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
