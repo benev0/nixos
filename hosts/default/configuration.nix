@@ -2,11 +2,15 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
+let 
+  sources = import ./nix/sources.nix;
+  lanzaboote = import sources.lanzaboote; 
+in
 {
   imports = [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./lanzaboote.nix
+      lanzaboote.nixosModules.lanzaboote
   ];
 
   nixpkgs.config = {
@@ -21,14 +25,18 @@
 
   # Bootloader.
   boot.loader = {
-    systemd-boot.enable = true;
+    systemd-boot.enable = lib.mkForce false;
     efi.canTouchEfiVariables = true;
+  };
+
+  boot.lanzaboote = {
+    enable = true;
+    pkiBundle = "/var/lib/sbctl";
   };
 
   services.xserver.enable = true;
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-  services.xserver.videoDrivers = ["nvidia"];
 
   environment.gnome.excludePackages = (with pkgs; [
     atomix # puzzle game
@@ -49,7 +57,7 @@
   ]);
 
   # enable extra containers 
-  programs.extra-container.enable = true;
+  # programs.extra-container.enable = true;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -57,27 +65,28 @@
   networking.enableIPv6 = true;
 
   # container networks (nat)
-  networking.nat = {
-    enable = true;
-    internalInterfaces = ["ve-+"];
-    externalInterface = "enp2s0";
-    enableIPv6 = true;
-  };
+  # networking.nat = {
+  #   enable = true;
+  #   internalInterfaces = ["ve-+"];
+  #   externalInterface = "enp2s0";
+  #   enableIPv6 = true;
+  # };
 
-  networking = {
-    bridges.br0.interfaces = [ "enp2s0" ];
+  # more container networking
+  # networking = {
+    # bridges.br0.interfaces = [ "enp2s0" ];
   
-    useDHCP = false;
-    interfaces."br0".useDHCP = true;
+    # useDHCP = false;
+    # interfaces."br0".useDHCP = true;
 
-    interfaces."br0".ipv4.addresses = [{
-      address = "192.168.100.3";
-      prefixLength = 24;
-    }];
+    # interfaces."br0".ipv4.addresses = [{
+    #   address = "192.168.100.3";
+    #   prefixLength = 24;
+    # }];
 
-    defaultGateway = "192.168.100.1";
-    nameservers = [ "192.168.100.1" ];
-  };
+    # defaultGateway = "192.168.100.1";
+    # nameservers = [ "192.168.100.1" ];
+  # };
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
   # Set your time zone.
@@ -98,30 +107,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # thunar file maniger
-  programs.thunar.enable = true;
-  # thunar Mount/Trash/...
-  services.gvfs.enable = true;
-  # image thumbnails
-  services.tumbler.enable = true; 
-
-  hardware = {
-    graphics.enable = true;
-    nvidia = {
-      modesetting.enable = true;
-      powerManagement.enable = true;
-      powerManagement.finegrained = false;
-      open = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
-      prime.sync.enable = true;
-      prime.amdgpuBusId = "PCI:1:0:0";
-      prime.nvidiaBusId = "PCI:6:0:0";
-    };
-  };
-
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-
 
   services = {
     supergfxd = { 
@@ -154,7 +141,7 @@
   # services.xserver.libinput.enable = true;
 
   programs.direnv.enable = true;
-  programs.direnv.enableBashIntegration = false;
+  programs.direnv.loadInNixShell = false;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ben = {
@@ -183,9 +170,10 @@
     glibc
     vim
     gnupg
+    # for lanzaboote 
     sbctl niv
+    
     home-manager
-    # podman # likley enabled elsewhere
     dive
     podman-tui
     podman-compose
