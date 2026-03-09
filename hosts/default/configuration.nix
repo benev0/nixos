@@ -35,8 +35,8 @@ in
   };
 
   services.xserver.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   environment.gnome.excludePackages = (with pkgs; [
     atomix # puzzle game
@@ -121,6 +121,21 @@ in
     };
   };
 
+  hardware.nvidia.powerManagement.finegrained = true;
+
+  hardware.nvidia.prime = {
+    # Replace these with the actual IDs you found via lspci
+    # Note: Nix expects decimal or hex strings in a specific format
+    amdgpuBusId = lib.mkForce "PCI:6:0:0"; 
+    nvidiaBusId = lib.mkForce "PCI:1:0:0";
+    
+    # Ensure offload is on (the module might already set this, 
+    # but re-declaring it is safe)
+    offload.enable = true;
+    offload.enableOffloadCmd = true;
+  };
+  
+
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -147,23 +162,28 @@ in
   users.users.ben = {
     isNormalUser = true;
     description = "ben";
-    extraGroups = [ "networkmanager" "wheel" "libvirtd" "podman"];
+    extraGroups = [ 
+        "networkmanager" 
+        "wheel" 
+        "libvirtd" 
+        # "podman"
+    ];
     packages = with pkgs; [];
   };
 
   # containers
-  virtualisation.containers.enable = true;
-  virtualisation = {
-    podman = {
-      enable = true;
+  # virtualisation.containers.enable = true;
+  # virtualisation = {
+    # podman = {
+      # enable = true;
 
       # Create a `docker` alias for podman, to use it as a drop-in replacement
-      dockerCompat = true;
+      # dockerCompat = true;
 
       # Required for containers under podman-compose to be able to talk to each other.
-      defaultNetwork.settings.dns_enabled = true;
-    };
-  };
+      # defaultNetwork.settings.dns_enabled = true;
+    # };
+  # };
 
   environment.memoryAllocator.provider = "libc";
   environment.systemPackages = with pkgs; [
@@ -174,9 +194,9 @@ in
     sbctl niv
     
     home-manager
-    dive
-    podman-tui
-    podman-compose
+    # dive
+    # podman-tui
+    # podman-compose
     git
     # hyprlandf
 

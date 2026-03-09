@@ -2,7 +2,7 @@
   description = "Nixos config flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
@@ -16,8 +16,8 @@
         default = nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs system;};
           modules = [
-            ./hosts/default/configuration.nix
             nixos-hardware.nixosModules.asus-rog-strix-g733qs
+            ./hosts/default/configuration.nix
           ];
         };
       };
