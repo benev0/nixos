@@ -124,13 +124,9 @@ in
   hardware.nvidia.powerManagement.finegrained = true;
 
   hardware.nvidia.prime = {
-    # Replace these with the actual IDs you found via lspci
-    # Note: Nix expects decimal or hex strings in a specific format
     amdgpuBusId = lib.mkForce "PCI:6:0:0"; 
     nvidiaBusId = lib.mkForce "PCI:1:0:0";
     
-    # Ensure offload is on (the module might already set this, 
-    # but re-declaring it is safe)
     offload.enable = true;
     offload.enableOffloadCmd = true;
   };
